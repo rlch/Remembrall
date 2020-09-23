@@ -14,14 +14,19 @@ class BookService {
 
   Future<List<Book>> searchBooks(String query) async {
     if (query.isEmpty) return [];
-    final Volumes vols = await BooksApi(_client).volumes.list(
-          query,
-          printType: "books",
-          orderBy: "relevance",
-          maxResults: 20,
-        );
-    final List<Book> books =
-        vols.items.map((vol) => Book.fromVolume(vol)).toList();
-    return books;
+    try {
+      final Volumes vols = await BooksApi(_client).volumes.list(
+            query,
+            printType: "books",
+            orderBy: "relevance",
+            maxResults: 5,
+          );
+      final List<Book> books =
+          vols.items?.map((vol) => Book.fromVolume(vol))?.toList() ?? [];
+      return books;
+    } catch (e) {
+      print(e);
+      return [];
+    }
   }
 }

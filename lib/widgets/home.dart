@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:remembrall/models/book.dart';
 import 'package:remembrall/services/book_service.dart';
+import 'package:remembrall/theme.dart';
 import 'package:remembrall/widgets/book_card.dart';
 
 class Home extends StatefulWidget {
@@ -15,23 +15,28 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  final BookService _bs = BookService();
+  int crossAxisCount = 4;
+  String query = "Harry Potter";
   final TextEditingController searchController = TextEditingController();
 
-  String query = "harry potter";
+  AppTheme appTheme;
+
+  final BookService _bs = BookService();
   Timer _debounce;
   static const int _debounceDuration = 200;
-
-  int crossAxisCount = 4;
+  Future<List<Book>> searchBooks;
 
   @override
   void initState() {
+    searchBooks = _bs.searchBooks(query);
+
     searchController.addListener(() {
       if (_debounce?.isActive ?? false) _debounce.cancel();
       _debounce = Timer(const Duration(milliseconds: _debounceDuration), () {
         if (searchController.text.isEmpty) return;
         setState(() {
           query = searchController.text;
+          searchBooks = _bs.searchBooks(query);
         });
       });
     });
@@ -40,13 +45,33 @@ class _HomeState extends State<Home> {
   }
 
   @override
+  void didChangeDependencies() {
+    appTheme = Provider.of<AppTheme>(context, listen: false);
+    super.didChangeDependencies();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'Remembrall',
+      appBar: PreferredSize(
+        child: Hero(
+          tag: 'appBar',
+          child: AppBar(
+            title: Text(
+              'Remembrall',
+            ),
+            actions: [
+              IconButton(
+                color: Theme.of(context).highlightColor,
+                icon: Icon(
+                  appTheme.isDark ? Icons.wb_sunny : Icons.nights_stay,
+                ),
+                onPressed: () => appTheme.switchTheme(),
+              )
+            ],
+          ),
         ),
+        preferredSize: Size.fromHeight(kToolbarHeight),
       ),
       body: Column(
         mainAxisSize: MainAxisSize.min,
@@ -60,13 +85,12 @@ class _HomeState extends State<Home> {
                 child: CupertinoTextField(
                   placeholder: "Search for a book:",
                   controller: searchController,
+                  textAlign: TextAlign.center,
                   keyboardType: TextInputType.text,
                   padding: EdgeInsets.symmetric(vertical: 15),
-                  textAlign: TextAlign.center,
-                  textAlignVertical: TextAlignVertical.center,
+                  style: Theme.of(context).textTheme.subtitle1,
                   placeholderStyle:
                       Theme.of(context).inputDecorationTheme.hintStyle,
-                  style: Theme.of(context).textTheme.subtitle1,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
                     color: Theme.of(context).inputDecorationTheme.fillColor,
@@ -79,13 +103,12 @@ class _HomeState extends State<Home> {
             child: SingleChildScrollView(
               physics: ScrollPhysics(),
               child: FutureBuilder<List<Book>>(
-                  future: _bs.searchBooks(query),
+                  future: searchBooks,
                   initialData: [],
                   builder: (context, snapshot) {
                     final books = snapshot.hasData
                         ? snapshot.data
                         : snapshot.requireData ?? [];
-                    print(books.length);
                     return AnimationLimiter(
                       key: ValueKey(books.isNotEmpty ? books[0]?.id : 0),
                       child: GridView.builder(
