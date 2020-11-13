@@ -19,7 +19,7 @@ class BookService {
             query,
             printType: "books",
             orderBy: "relevance",
-            maxResults: 5,
+            maxResults: 20,
           );
       final List<Book> books =
           vols.items?.map((vol) => Book.fromVolume(vol))?.toList() ?? [];

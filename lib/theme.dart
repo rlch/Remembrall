@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme extends ChangeNotifier {
-  bool isDark = false;
+  bool isDark = true;
 
   ThemeMode currentTheme() => isDark ? ThemeMode.dark : ThemeMode.light;
 
@@ -13,6 +13,20 @@ class AppTheme extends ChangeNotifier {
   }
 
   AppTheme();
+
+  static final double phoneBoundary = 600;
+  static final double tabletBoundary = 1200;
+  static final double desktopBoundary = 1600;
+
+  static T determineBreakpoint<T>(
+          double width, T phone, T tablet, T desktop, T tv) =>
+      width < phoneBoundary
+          ? phone
+          : width < tabletBoundary
+              ? tablet
+              : width < desktopBoundary
+                  ? desktop
+                  : tv;
 
   static final ThemeData light = ThemeData(
     scaffoldBackgroundColor: Color(0xffF7F4F3),
@@ -40,10 +54,10 @@ class AppTheme extends ChangeNotifier {
           color: Color(0xffC3073F),
         ),
         headline4: GoogleFonts.quicksand(
-          color: Colors.white,
+          color: Colors.black,
         ),
         headline5: GoogleFonts.pacifico(
-          color: Colors.white,
+          color: Colors.black,
         ),
         button: GoogleFonts.quicksand(
           color: Colors.white,

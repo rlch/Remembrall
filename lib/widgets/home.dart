@@ -15,7 +15,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  int crossAxisCount = 4;
+  int crossAxisCount;
   String query = "Harry Potter";
   final TextEditingController searchController = TextEditingController();
 
@@ -52,6 +52,8 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    crossAxisCount = AppTheme.determineBreakpoint(width, 2, 3, 5, 6);
     return Scaffold(
       appBar: PreferredSize(
         child: Hero(
@@ -111,31 +113,35 @@ class _HomeState extends State<Home> {
                         : snapshot.requireData ?? [];
                     return AnimationLimiter(
                       key: ValueKey(books.isNotEmpty ? books[0]?.id : 0),
-                      child: GridView.builder(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                        shrinkWrap: true,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: crossAxisCount,
-                          crossAxisSpacing: 20,
-                          mainAxisSpacing: 20,
-                          childAspectRatio:
-                              0.625, // Standard aspect ratio for eBooks
-                        ),
-                        itemCount: books.length,
-                        itemBuilder: (context, i) =>
-                            AnimationConfiguration.staggeredGrid(
-                          duration: Duration(milliseconds: 300),
-                          delay: Duration(milliseconds: 150),
-                          columnCount: crossAxisCount,
-                          position: i,
-                          child: SlideAnimation(
-                            child: ScaleAnimation(
-                              scale: 0.7,
-                              child: FadeInAnimation(
-                                child: BookCard(
-                                  books[i],
-                                  key: ValueKey(books[i].id),
+                      child: FractionallySizedBox(
+                        widthFactor: 0.8,
+                        child: GridView.builder(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 20),
+                          shrinkWrap: true,
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: crossAxisCount,
+                            crossAxisSpacing: 20,
+                            mainAxisSpacing: 20,
+                            childAspectRatio:
+                                0.625, // Standard aspect ratio for eBooks
+                          ),
+                          itemCount: books.length,
+                          itemBuilder: (context, i) =>
+                              AnimationConfiguration.staggeredGrid(
+                            duration: Duration(milliseconds: 300),
+                            delay: Duration(milliseconds: 150),
+                            columnCount: crossAxisCount,
+                            position: i,
+                            child: SlideAnimation(
+                              child: ScaleAnimation(
+                                scale: 0.7,
+                                child: FadeInAnimation(
+                                  child: BookCard(
+                                    books[i],
+                                    key: ValueKey(books[i].id),
+                                  ),
                                 ),
                               ),
                             ),

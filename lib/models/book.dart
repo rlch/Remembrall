@@ -31,7 +31,8 @@ class Book {
             covers.smallThumbnail ??
             ""
         : "";
-        
+    cover = cover.replaceAll("http", "https");
+
     return Book(
       volume.id,
       info.title,
